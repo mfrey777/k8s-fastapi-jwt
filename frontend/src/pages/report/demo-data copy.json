@@ -1,0 +1,15 @@
+{
+  "label": "The Boss",
+  "children": [
+    {
+      "label": "Manager Sally",
+      "children": [
+        { "label": "Peon Rodger" },
+        { "label": "Peon Dave" },
+        { "label": "Supervisor Henri", "children": [{ "label": "Clerk Jane" }] },
+        { "label": "Peon Ralph" }
+      ]
+    },
+    { "label": "Manager Joe", "children": [{ "label": "Peon Frank" }, { "label": "Peon Jill" }] }
+  ]
+}

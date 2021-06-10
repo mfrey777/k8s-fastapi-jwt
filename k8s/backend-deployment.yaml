@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: backend-fastapi-deployment
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            component: backend-fastapi
+    template:
+        metadata:
+            labels:
+                component: backend-fastapi
+        spec:
+            initContainers:
+                -   name: init-redis
+                    image: busybox:1.28
+                    command: ['sh', '-c', 'until nslookup redis-cluster-ip-service; do echo waiting for redis-cluster-ip-service; sleep 2; sleep 1; done;']
+            #     -   name: init-psotgres
+            #         image: busybox:1.28
+            #         command: ['sh', '-c', 'until nslookup postgres-cluster-ip-service; do echo waiting for postgres-cluster-ip-service; sleep 2; done;']
+            #     -   name: init-mailhog
+            #         image: busybox:1.28
+            #         command: ['sh', '-c', 'until nslookup mailhog-cluster-ip-service; do echo waiting for mailhog-cluster-ip-service; sleep 2; done;']
+            containers:
+                -   name: backend-fastapi
+                    image: backend-fastapi
+                    ports:
+                        -   containerPort: 8888
+                    env:
+                        -   name: REDIS_HOST
+                            value: redis-cluster-ip-service
+                        -   name: REDIS_PORT
+                            value: '6379'
+                        # -   name: PGUSER
+                        #     value: postgres
+                        # -   name: PGHOST
+                        #     value: postgres-cluster-ip-service
+                        # -   name: PGPORT
+                        #     value: '5432'
+                        # -   name: PGDATABASE
+                        #     value: db_dev
+                        # -   name: PGPASSWORD
+                        #     valueFrom:
+                        #         secretKeyRef:
+                        #             name: pgpassword
+                        #             key: PGPASSWORD
+                        -   name: DATABASE_URL
+                            value: postgresql://postgres:password@postgres-cluster-ip-service:5432/postgres
+                        -   name: PYTHONPATH
+                            value: .
+            # restartPolicy: Always
+

@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: frontend-deployment
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            component: frontend-fastapi
+    template:
+        metadata:
+            labels:
+                component: frontend-fastapi
+        spec:
+            initContainers:
+                -   name: init-backend
+                    image: busybox:1.28
+                    command: ['sh', '-c', 'until nslookup backend-fastapi-cluster-ip-service; do echo waiting for backend-cluster-ip-service; sleep 2; done;']
+            containers:
+                -   name: frontend-fastapi
+                    image: frontend-fastapi
+                    ports:
+                        -   containerPort: 3000
+                    env:
+                        -   name: CHOKIDAR_USEPOLLING
+                            value: 'true'
+                        -   name: CI
+                            value: 'true'

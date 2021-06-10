@@ -1,0 +1,11 @@
+--- node_modules/react-dropdown-tree-select/dist/react-dropdown-tree-select.d.ts	2020-10-28 12:01:56.934000000 +0100
++++ patch/react-dropdown-tree-select.d.ts	2020-10-28 13:57:10.903362300 +0100
+@@ -39,7 +39,7 @@
+      *
+      * Calls the handler with the current node object and all selected nodes (if any)
+      */
+-    onChange?: (currentNode: TreeNode, selectedNodes: TreeNode[]) => void
++    onChange?: (currentNode: TreeNode, selectedNodes: TreeNode[], id: string) => void
+     /**  Fired on click of the action */
+     onAction?: (currentNode: TreeNode, currentAction: NodeAction) => void
+     /** Fires when a node is expanded or collapsed.

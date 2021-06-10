@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: backend-fastapi-cluster-ip-service
+spec:
+    type: ClusterIP
+    selector:
+        component: backend-fastapi
+    ports:
+        -   port: 8888
+            targetPort: 8888
+    

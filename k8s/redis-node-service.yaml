@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: redis-node-service
+spec:
+    type: NodePort
+    selector:
+        component: redis
+    ports:
+        -   port: 6379
+            nodePort: 32114
