@@ -15,7 +15,7 @@ spec:
             initContainers:
                 -   name: init-redis
                     image: busybox:1.28
-                    command: ['sh', '-c', 'until nslookup redis-cluster-ip-service; do echo waiting for redis-cluster-ip-service; sleep 2; sleep 1; done;']
+                    command: ['sh', '-c', 'until nslookup redis-cluster-ip-service; do echo waiting for redis-cluster-ip-service; sleep 2; done;']
             #     -   name: init-psotgres
             #         image: busybox:1.28
             #         command: ['sh', '-c', 'until nslookup postgres-cluster-ip-service; do echo waiting for postgres-cluster-ip-service; sleep 2; done;']
