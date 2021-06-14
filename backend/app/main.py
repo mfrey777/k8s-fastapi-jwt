@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from sqlalchemy.future import select
 
 from .connections import get_redis_pool
-from app.models import async_session, init_models
+from app.models import async_session, init_models, init_data
 
 from .routers import test_redis, test_db, auth, test_auth
 from app.schemas.user import UserInDB as UserinDBSchema
@@ -153,10 +153,11 @@ async def starup_event():
     print('app startup triggered')
     app.state.redis = await get_redis_pool()
     print('before init_models')
-    # await init_models()
+    await init_models()
     print('after init_models')
+    await init_data()
+    print('after init_data')
     app.state.db_session = async_session()
-
 
 # @app.on_event('shutdown')
 # async def shutdown_event():

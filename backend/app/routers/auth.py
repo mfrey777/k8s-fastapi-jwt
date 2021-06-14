@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from app.models.user import User as UserModel
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic.types import StrictStr
@@ -8,6 +10,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi_jwt_auth.exceptions import AuthJWTException
 from fastapi.responses import JSONResponse
 from fastapi_jwt_auth import AuthJWT
+from starlette.requests import Request
 
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -39,11 +42,28 @@ class Settings(BaseModel):
     authjwt_cookie_csrf_protect: bool = True
     # Change to 'lax' in production to make your website more secure from CSRF Attacks, default is None
     # authjwt_cookie_samesite: str = 'lax'
+    authjwt_denylist_enabled: bool = True
+    authjwt_denylist_token_checks: set = {"access", "refresh"}
+    access_expires: int = timedelta(minutes=15)
+    refresh_expires: int = timedelta(days=30)
+
+
+settings = Settings()
 
 
 @ AuthJWT.load_config
 def get_config():
     return Settings()
+
+
+@ AuthJWT.token_in_denylist_loader
+def check_if_token_in_denylist(decrypted_token):
+    jti = decrypted_token['jti']
+    print(jti)
+    return False
+    # entry = request.app.state.redis.get(jti)
+
+    # return entry and entry == 'true'
 
 
 def verify_password(plain_password, hashed_password):
@@ -166,3 +186,27 @@ def logout(Authorize: AuthJWT = Depends()):
 
     Authorize.unset_jwt_cookies()
     return {"msg": "Successfully logout"}
+
+
+# Endpoint for revoking the current users access token
+@router.delete('/access-revoke')
+async def access_revoke(request: Request, Authorize: AuthJWT = Depends()):
+    Authorize.jwt_required()
+
+    # Store the tokens in redis with the value true for revoked.
+    # We can also set an expires time on these tokens in redis,
+    # so they will get automatically removed after they expired.
+    jti = Authorize.get_raw_jwt()['jti']
+    # request.app.state.redis.setex(jti, settings.access_expires, 'true')
+    await request.app.state.redis.setex(jti, 10000, 'true')
+    return {"detail": "Access token has been revoked"}
+
+
+# Endpoint for revoking the current users refresh token
+@router.delete('/refresh-revoke')
+async def refresh_revoke(request: Request, Authorize: AuthJWT = Depends()):
+    Authorize.jwt_refresh_token_required()
+
+    jti = Authorize.get_raw_jwt()['jti']
+    await request.app.state.redis.setex(jti, settings.refresh_expires, 'true')
+    return {"detail": "Refresh token has been revoke"}
